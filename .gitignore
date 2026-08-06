@@ -1,0 +1,35 @@
+# Backend
+backend/target/
+backend/.idea/
+backend/uploads/
+backend/*.log
+
+# Frontend
+admin-frontend/node_modules/
+admin-frontend/dist/
+admin-frontend/.vite/
+admin-frontend/*.log
+
+# Mini Program
+mini-program/unpackage/
+mini-program/node_modules/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Secrets
+.env
+admin-frontend/.env
+backend/.env
+backend/application-local.yml
+backend/src/main/resources/application-local.yml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Launcher build artifacts
+tools/demo-launcher/bin/
+tools/demo-launcher/obj/

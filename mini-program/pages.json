@@ -1,0 +1,51 @@
+{
+  "pages": [
+    {
+      "path": "pages/index/index",
+      "style": {
+        "navigationBarTitleText": "工单管理",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/workorder/detail",
+      "style": {
+        "navigationBarTitleText": "工单详情"
+      }
+    },
+    {
+      "path": "pages/create/create",
+      "style": {
+        "navigationBarTitleText": "手动建单"
+      }
+    },
+    {
+      "path": "pages/team/team",
+      "style": {
+        "navigationBarTitleText": "班组管理"
+      }
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "工单管理系统",
+    "navigationBarBackgroundColor": "#F8F8F8",
+    "backgroundColor": "#F8F8F8"
+  },
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#409EFF",
+    "borderStyle": "black",
+    "backgroundColor": "#ffffff",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "工单"
+      },
+      {
+        "pagePath": "pages/team/team",
+        "text": "班组"
+      }
+    ]
+  }
+}

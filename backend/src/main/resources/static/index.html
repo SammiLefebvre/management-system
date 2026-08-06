@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>AI 人脸识别 Web 测试</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; padding: 30px; background: #f9fafc; }
+        .container { max-width: 700px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        h1 { margin-top: 0; color: #1a2b3c; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-weight: 600; margin-bottom: 6px; color: #2c3e50; }
+        input, button { padding: 10px 14px; font-size: 15px; border-radius: 6px; border: 1px solid #d0d7de; }
+        input[type="text"], input[type="email"] { width: 100%; background: white; }
+        input[type="file"] { border: none; padding: 8px 0; }
+        button { border: none; font-weight: 600; transition: 0.2s; cursor: pointer; }
+        .btn-send-code { background: #f39c12; color: white; }
+        .btn-send-code:hover { background: #e67e22; }
+        .btn-login { background: #9b59b6; color: white; }
+        .btn-login:hover { background: #8e44ad; }
+        .btn-register { background: #2ecc71; color: white; }
+        .btn-register:hover { background: #27ae60; }
+        .btn-recognize { background: #3498db; color: white; }
+        .btn-recognize:hover { background: #2980b9; }
+        .btn-clear { background: #e74c3c; color: white; }
+        .btn-clear:hover { background: #c0392b; }
+        button + button { margin-left: 8px; }
+        .login-status {
+            padding: 10px 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        .login-status.logged-in { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .login-status.logged-out { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        .result-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            min-height: 120px;
+            margin-top: 8px;
+        }
+        .result-item {
+            display: flex;
+            padding: 8px 0;
+            border-bottom: 1px solid #edf2f7;
+        }
+        .result-item:last-child { border-bottom: none; }
+        .result-key {
+            font-weight: 600;
+            color: #2c3e50;
+            width: 140px;
+            flex-shrink: 0;
+        }
+        .result-value { color: #1a202c; word-break: break-all; }
+        .result-value.success { color: #27ae60; font-weight: 600; }
+        .result-value.error { color: #e74c3c; font-weight: 600; }
+        .result-value.highlight { background: #fef9e7; padding: 2px 8px; border-radius: 4px; }
+        .result-section { margin-bottom: 12px; }
+        .result-section-title { font-weight: 600; color: #2c3e50; margin-bottom: 6px; font-size: 1.05em; }
+        .result-nested { padding-left: 20px; border-left: 3px solid #dfe6e9; margin-top: 4px; }
+        .result-empty { color: #95a5a6; font-style: italic; }
+        .badge {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        .badge-success { background: #d4edda; color: #155724; }
+        .badge-error { background: #f8d7da; color: #721c24; }
+        .badge-info { background: #d1ecf1; color: #0c5460; }
+        .score-bar {
+            display: inline-block;
+            height: 8px;
+            border-radius: 4px;
+            background: #e9ecef;
+            width: 120px;
+            margin-left: 8px;
+            vertical-align: middle;
+            overflow: hidden;
+        }
+        .score-bar-fill { height: 100%; background: #2ecc71; transition: width 0.3s; }
+        .score-bar-fill.warning { background: #f39c12; }
+        .score-bar-fill.danger { background: #e74c3c; }
+
+        /* 登录区域分割线 */
+        .divider {
+            border: none;
+            border-top: 2px dashed #e9ecef;
+            margin: 30px 0;
+        }
+        .inline-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .inline-group input { flex: 1; }
+        .inline-group button { white-space: nowrap; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🦅 AI 人脸识别测试</h1>
+
+    <!-- ========== 第一步：登录区域 ========== -->
+    <h3>🔐 登录（获取 Token）</h3>
+    <div id="loginStatus" class="login-status logged-out">⛔ 未登录，请先登录</div>
+
+    <div class="form-group">
+        <label>📧 邮箱地址</label>
+        <input type="email" id="loginEmail" placeholder="请输入邮箱，例如: user@example.com" value="test@qq.com">
+    </div>
+
+    <div class="form-group">
+        <label>✉️ 验证码</label>
+        <div class="inline-group">
+            <input type="text" id="loginCode" placeholder="6位数字验证码" maxlength="6">
+            <button class="btn-send-code" onclick="sendCode()">📨 发送验证码</button>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <button class="btn-login" onclick="handleLogin()">🚀 登录</button>
+        <button class="btn-clear" onclick="logout()">🚪 退出登录</button>
+    </div>
+
+    <hr class="divider">
+
+    <!-- ========== 第二步：人脸识别操作区域 ========== -->
+    <h3>📸 人脸操作（需先登录）</h3>
+
+    <div class="form-group">
+        <label>选择人脸图片</label>
+        <input type="file" id="imageInput" accept="image/*">
+    </div>
+
+    <div class="form-group">
+        <label>组 ID (Group ID)</label>
+        <input type="text" id="groupId" placeholder="例如: group1" value="test_group">
+    </div>
+
+    <div class="form-group">
+        <label>用户 ID (User ID) - 仅注册需要</label>
+        <input type="text" id="userId" placeholder="例如: user_001" value="test_user">
+    </div>
+
+    <div class="form-group">
+        <button class="btn-register" onclick="handleRegister()">📸 注册人脸</button>
+        <button class="btn-recognize" onclick="handleRecognize()">🔍 识别人脸</button>
+        <button class="btn-clear" onclick="clearResult()">🗑️ 清空结果</button>
+    </div>
+
+    <h3>📋 返回结果</h3>
+    <div class="result-box" id="resultBox">
+        <span class="result-empty">等待操作...</span>
+    </div>
+</div>
+
+<script>
+    // ========== 基础配置 ==========
+    const API_BASE = 'http://localhost:9090/api';
+    let authToken = null; // 存储 JWT Token
+
+    // DOM 元素
+    const loginEmail = document.getElementById('loginEmail');
+    const loginCode = document.getElementById('loginCode');
+    const loginStatus = document.getElementById('loginStatus');
+    const imageInput = document.getElementById('imageInput');
+    const groupIdInput = document.getElementById('groupId');
+    const userIdInput = document.getElementById('userId');
+    const resultBox = document.getElementById('resultBox');
+
+    // ========== 更新登录状态 UI ==========
+    function updateLoginUI() {
+        if (authToken) {
+            loginStatus.className = 'login-status logged-in';
+            loginStatus.innerHTML = `✅ 已登录（Token 有效）`;
+        } else {
+            loginStatus.className = 'login-status logged-out';
+            loginStatus.innerHTML = `⛔ 未登录，请先登录`;
+        }
+    }
+
+    // ========== 显示结果（原有的直观渲染函数） ==========
+    function renderJson(data, depth = 0) {
+        if (data === null || data === undefined) return '<span class="result-empty">无数据</span>';
+        if (typeof data !== 'object') return escapeHtml(String(data));
+        if (Array.isArray(data)) {
+            if (data.length === 0) return '<span class="result-empty">空数组</span>';
+            return data.map((item, index) => {
+                return `<div class="result-section">
+                            <div class="result-section-title">📎 项目 ${index + 1}</div>
+                            <div class="result-nested">${renderJson(item, depth + 1)}</div>
+                        </div>`;
+            }).join('');
+        }
+        const entries = Object.entries(data);
+        if (entries.length === 0) return '<span class="result-empty">空对象</span>';
+
+        let html = '';
+        for (const [key, value] of entries) {
+            let isScore = key.toLowerCase().includes('score') || key.toLowerCase().includes('similarity');
+            let isUserId = key.toLowerCase().includes('user_id') || key.toLowerCase().includes('userId');
+            let isErrorMsg = key.toLowerCase().includes('error') || key.toLowerCase().includes('message') || key.toLowerCase().includes('msg');
+
+            let valueHtml;
+            if (typeof value === 'object' && value !== null) {
+                valueHtml = renderJson(value, depth + 1);
+            } else {
+                let displayValue = escapeHtml(String(value));
+                if (isScore && typeof value === 'number' && !isNaN(value)) {
+                    const percent = Math.min(Math.max(value * 100, 0), 100);
+                    const barColor = percent >= 80 ? '' : (percent >= 60 ? 'warning' : 'danger');
+                    displayValue = `<span>${displayValue}</span>
+                                    <span class="score-bar"><span class="score-bar-fill ${barColor}" style="width:${percent}%"></span></span>`;
+                }
+                if (isErrorMsg && value) {
+                    displayValue = `<span class="result-value error">⚠️ ${displayValue}</span>`;
+                }
+                if (isUserId && value) {
+                    displayValue = `<span class="badge badge-info">👤 ${displayValue}</span>`;
+                }
+                valueHtml = displayValue;
+            }
+
+            let displayKey = key.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').trim();
+            displayKey = displayKey.charAt(0).toUpperCase() + displayKey.slice(1);
+
+            let keyClass = 'result-key';
+            let valueClass = 'result-value';
+            if (isErrorMsg && value) {
+                valueClass = 'result-value error';
+            } else if (isScore) {
+                valueClass = 'result-value highlight';
+            }
+
+            html += `<div class="result-item">
+                        <span class="${keyClass}">${displayKey}</span>
+                        <span class="${valueClass}">${valueHtml}</span>
+                    </div>`;
+        }
+
+        let statusBadge = '';
+        if (data.hasOwnProperty('error')) {
+            statusBadge = `<span class="badge badge-error">❌ 失败</span>`;
+        } else if (data.hasOwnProperty('success') && data.success === true) {
+            statusBadge = `<span class="badge badge-success">✅ 成功</span>`;
+        } else if (data.hasOwnProperty('code') && data.code === 0) {
+            statusBadge = `<span class="badge badge-success">✅ 成功</span>`;
+        } else if (data.hasOwnProperty('code') && data.code !== 0) {
+            statusBadge = `<span class="badge badge-error">❌ 失败 (code: ${data.code})</span>`;
+        }
+        return `<div style="margin-top:4px;">${statusBadge}${html}</div>`;
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function showResult(data) {
+        if (data && typeof data === 'object' && data.error) {
+            resultBox.innerHTML = `<div class="result-item"><span class="result-key">错误</span><span class="result-value error">${escapeHtml(data.error)}</span></div>`;
+            return;
+        }
+        try {
+            const html = renderJson(data);
+            resultBox.innerHTML = html || '<span class="result-empty">无返回数据</span>';
+        } catch (e) {
+            resultBox.innerHTML = `<span class="result-value error">解析错误：${escapeHtml(e.message)}</span>`;
+        }
+    }
+
+    function clearResult() {
+        resultBox.innerHTML = '<span class="result-empty">等待操作...</span>';
+    }
+
+    // ========== 获取图片文件 ==========
+    function getImageFile() {
+        if (imageInput.files.length === 0) {
+            alert('请先选择一张图片！');
+            return null;
+        }
+        return imageInput.files[0];
+    }
+
+    // ========== 检查登录状态 ==========
+    function checkAuth() {
+        if (!authToken) {
+            alert('⚠️ 请先登录！');
+            return false;
+        }
+        return true;
+    }
+
+    // ========== 1. 发送验证码 ==========
+    async function sendCode() {
+        const email = loginEmail.value.trim();
+        if (!email) {
+            alert('请输入邮箱地址！');
+            return;
+        }
+        try {
+            resultBox.innerHTML = '⏳ 正在发送验证码...';
+            const response = await fetch(`${API_BASE}/auth/send-code?email=${encodeURIComponent(email)}`, {
+                method: 'POST'
+            });
+            const data = await response.json();
+            showResult(data);
+            if (data.success) {
+                alert('✅ 验证码已发送至邮箱，请查收！');
+            } else {
+                alert('❌ 发送失败：' + data.message);
+            }
+        } catch (error) {
+            showResult({ error: '请求失败: ' + error.message });
+        }
+    }
+
+    // ========== 2. 登录 ==========
+    async function handleLogin() {
+        const email = loginEmail.value.trim();
+        const code = loginCode.value.trim();
+        if (!email || !code) {
+            alert('请输入邮箱和验证码！');
+            return;
+        }
+
+        try {
+            resultBox.innerHTML = '⏳ 正在登录...';
+            const response = await fetch(`${API_BASE}/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email, code: code })
+            });
+            const data = await response.json();
+            showResult(data);
+
+            if (data.success && data.token) {
+                authToken = data.token;
+                updateLoginUI();
+                alert('✅ 登录成功！Token 已保存。');
+            } else {
+                alert('❌ 登录失败：' + (data.message || '验证码错误或过期'));
+            }
+        } catch (error) {
+            showResult({ error: '请求失败: ' + error.message });
+        }
+    }
+
+    // ========== 3. 退出登录 ==========
+    function logout() {
+        authToken = null;
+        updateLoginUI();
+        clearResult();
+        alert('已退出登录');
+    }
+
+    // ========== 4. 人脸注册（带 Token） ==========
+    async function handleRegister() {
+        if (!checkAuth()) return;
+
+        const file = getImageFile();
+        if (!file) return;
+
+        const groupId = groupIdInput.value.trim();
+        const userId = userIdInput.value.trim();
+        if (!groupId || !userId) {
+            alert('组ID 和 用户ID 不能为空！');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('image', file);
+        formData.append('groupId', groupId);
+        formData.append('userId', userId);
+
+        try {
+            resultBox.innerHTML = '⏳ 正在注册，请稍候...';
+            const response = await fetch(`${API_BASE}/face/register`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + authToken  // ✅ 携带 Token
+                },
+                body: formData
+            });
+            const data = await response.json();
+            showResult(data);
+        } catch (error) {
+            showResult({ error: '请求失败: ' + error.message });
+        }
+    }
+
+    // ========== 5. 人脸识别（带 Token） ==========
+    async function handleRecognize() {
+        if (!checkAuth()) return;
+
+        const file = getImageFile();
+        if (!file) return;
+
+        const groupId = groupIdInput.value.trim();
+        if (!groupId) {
+            alert('组ID 不能为空！');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('image', file);
+        formData.append('groupIdList', groupId);
+
+        try {
+            resultBox.innerHTML = '⏳ 正在识别，请稍候...';
+            const response = await fetch(`${API_BASE}/face/recognize`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + authToken  // ✅ 携带 Token
+                },
+                body: formData
+            });
+            const data = await response.json();
+            showResult(data);
+        } catch (error) {
+            showResult({ error: '请求失败: ' + error.message });
+        }
+    }
+
+    // ========== 页面加载完成时更新 UI ==========
+    updateLoginUI();
+</script>
+</body>
+</html>

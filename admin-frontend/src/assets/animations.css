@@ -1,0 +1,61 @@
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes gradient-flow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, var(--bg-secondary) 25%, #e8e8ed 50%, var(--bg-secondary) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.dark .animate-shimmer {
+  background: linear-gradient(90deg, var(--bg-secondary) 25%, #2c2c2e 50%, var(--bg-secondary) 75%);
+  background-size: 200% 100%;
+}
+
+.animate-gradient-flow {
+  background-size: 200% 200%;
+  animation: gradient-flow 20s ease infinite;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.5s cubic-bezier(0.25, 0.1, 0.25, 1.0) both;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.3s cubic-bezier(0.25, 0.1, 0.25, 1.0) both;
+}
+
+.page-enter-active {
+  transition: opacity 0.3s cubic-bezier(0.25, 0.1, 0.25, 1.0), transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1.0);
+}
+
+.page-enter-from {
+  opacity: 0;
+  transform: translateY(16px);
+}
+
+.page-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.page-leave-to {
+  opacity: 0;
+}

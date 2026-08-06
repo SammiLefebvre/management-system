@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mvn spring-boot:run -e)",
+      "Bash(mvn dependency:tree -Dincludes=com.baomidou:*)",
+      "Bash(jar tf *)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:baomidou.com)",
+      "Bash(mvn clean *)",
+      "Bash(javap -cp /c/Users/Frenc/.m2/repository/com/baomidou/mybatis-plus-spring/3.5.12/mybatis-plus-spring-3.5.12.jar com.baomidou.mybatisplus.extension.service.IService)",
+      "Bash(javap -cp /c/Users/Frenc/.m2/repository/com/baomidou/mybatis-plus-spring/3.5.12/mybatis-plus-spring-3.5.12.jar com.baomidou.mybatisplus.extension.repository.IRepository)",
+      "Bash(javap -cp /c/Users/Frenc/.m2/repository/com/baomidou/mybatis-plus-extension/3.5.12/mybatis-plus-extension-3.5.12.jar com.baomidou.mybatisplus.extension.repository.IRepository)",
+      "Bash(timeout 60 mvn spring-boot:run)",
+      "Bash(C:/Program Files/MySQL/MySQL Server 8.0/bin/mysql.exe *)",
+      "Bash(tasklist)",
+      "Bash(curl -s -X POST http://localhost:9090/api/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"FrenchFriesWX@outlook.com\",\"code\":\"123456\"}')",
+      "Bash(wmic process *)",
+      "Bash(netstat -ano)",
+      "Bash(jps -lvm)",
+      "Bash(taskkill *)",
+      "Bash(kill *)",
+      "Bash(mvn -v)",
+      "Bash(java -jar target/ai-back-0.0.1-SNAPSHOT.jar)",
+      "Bash(npm run *)"
+    ]
+  }
+}
