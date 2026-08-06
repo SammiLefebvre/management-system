@@ -53,11 +53,9 @@ VITE_AMAP_KEY=你的高德地图Key
 
 ### 后端（Hugging Face AI）
 
-复制 `backend/.env.example` 为 `.env`，或在启动时设置环境变量：
+AI 功能使用的模型由后端指定，但 **Hugging Face API Token 由用户在管理后台首次使用 AI 助手或 AI 派单时自行输入**，保存在浏览器本地，不会提交到服务器代码或仓库。
 
-```bash
-HUGGINGFACE_API_KEY=你的HuggingFaceToken
-```
+> 不再需要配置 `HUGGINGFACE_API_KEY` 环境变量。
 
 ### 后端（百度人脸识别）
 
@@ -87,11 +85,8 @@ mysql -u root -p < backend/docs/sql/init.sql
 ### 2. 启动后端
 
 ```bash
-# Windows 请设置 Hugging Face Token
-set HUGGINGFACE_API_KEY=你的HuggingFaceToken
-
 cd backend
-mvn spring-boot:run
+mvnw.cmd spring-boot:run
 ```
 
 后端默认端口：`http://localhost:9090`
@@ -146,7 +141,7 @@ npm run dev
   mysql -u root -p < backend/docs/sql/init.sql
   ```
 
-- （可选）**Hugging Face Token** 用于 AI 助手和 AI 派单。
+- （可选）**Hugging Face Token**：首次在管理后台使用 AI 助手/AI 派单时按提示输入，仅保存在浏览器本地。
 - （可选）**高德地图 Key** 用于数据大屏地图。
 - （可选）**百度人脸 API** 用于人脸识别登录。
 
