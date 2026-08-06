@@ -37,11 +37,12 @@ class AiControllerTest {
 
     @Test
     void chat_shouldReturnAnswer() throws Exception {
-        when(aiChatService.chat(any())).thenReturn("今天有 0 条超期工单");
+        when(aiChatService.chat(any(), any())).thenReturn("今天有 0 条超期工单");
         String token = jwtUtil.generateToken(1L, "test@gzgd.com", "演示项目组", "公司管理");
 
         mockMvc.perform(post("/api/ai/chat")
                         .header("Authorization", "Bearer " + token)
+                        .header("X-HF-Token", "hf-test-token")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"message\":\"今天有几条超期工单？\"}"))
                 .andExpect(status().isOk())
@@ -55,11 +56,12 @@ class AiControllerTest {
         vo.setPersonnelId(2L);
         vo.setName("张三");
         vo.setReason("距离最近");
-        when(aiDispatchService.advise(anyLong())).thenReturn(vo);
+        when(aiDispatchService.advise(anyLong(), any())).thenReturn(vo);
         String token = jwtUtil.generateToken(1L, "test@gzgd.com", "演示项目组", "公司管理");
 
         mockMvc.perform(post("/api/ai/dispatch/advice?workOrderId=1")
-                        .header("Authorization", "Bearer " + token))
+                        .header("Authorization", "Bearer " + token)
+                        .header("X-HF-Token", "hf-test-token"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.name").value("张三"));
     }

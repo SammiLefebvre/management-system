@@ -59,9 +59,8 @@ baidu:
     secret-key: "sCe4zHD3qB8LoxINWybETCmpHSok72kC"
     score-threshold: 80
 
-# ========== Hugging Face 配置 ==========
+# ========== Hugging Face 配置（模型由系统指定，API Key 由前端请求时传入） ==========
 huggingface:
-  api-key: ${HUGGINGFACE_API_KEY:}
   model: Qwen/Qwen2.5-7B-Instruct
   fallback-model: meta-llama/Llama-3.2-3B-Instruct
   endpoint: https://api-inference.huggingface.co/models/

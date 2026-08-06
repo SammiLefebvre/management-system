@@ -35,7 +35,7 @@ public class AiDispatchService {
         this.personnelMapper = personnelMapper;
     }
 
-    public AiDispatchAdviceVO advise(Long workOrderId) {
+    public AiDispatchAdviceVO advise(Long workOrderId, String apiKey) {
         WorkOrder wo = workOrderService.getById(workOrderId);
         if (wo == null) {
             throw new BizException("工单不存在");
@@ -53,7 +53,7 @@ public class AiDispatchService {
         }
 
         String prompt = buildPrompt(wo, device, candidates);
-        String answer = huggingFaceClient.generate(prompt);
+        String answer = huggingFaceClient.generate(prompt, apiKey);
         return parseAnswer(workOrderId, answer, candidates, device);
     }
 

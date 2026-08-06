@@ -22,17 +22,19 @@ public class AiController {
     }
 
     @PostMapping("/chat")
-    public Result<String> chat(@RequestBody Map<String, String> body) {
+    public Result<String> chat(@RequestBody Map<String, String> body,
+                               @RequestHeader("X-HF-Token") String apiKey) {
         String message = body.get("message");
         if (message == null || message.isBlank()) {
             return Result.fail("消息不能为空");
         }
-        String answer = aiChatService.chat(message);
+        String answer = aiChatService.chat(message, apiKey);
         return Result.ok(answer);
     }
 
     @PostMapping("/dispatch/advice")
-    public Result<AiDispatchAdviceVO> dispatchAdvice(@RequestParam Long workOrderId) {
-        return Result.ok(aiDispatchService.advise(workOrderId));
+    public Result<AiDispatchAdviceVO> dispatchAdvice(@RequestParam Long workOrderId,
+                                                     @RequestHeader("X-HF-Token") String apiKey) {
+        return Result.ok(aiDispatchService.advise(workOrderId, apiKey));
     }
 }

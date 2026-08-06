@@ -1,7 +1,13 @@
 import request from './request'
+import { getHuggingFaceToken } from '@/composables/useHuggingFaceToken'
+
+function hfHeaders() {
+  const token = getHuggingFaceToken()
+  return token ? { 'X-HF-Token': token } : {}
+}
 
 export function chat(message: string) {
-  return request.post<string>('/api/ai/chat', { message })
+  return request.post<string>('/api/ai/chat', { message }, { headers: hfHeaders() })
 }
 
 export interface DispatchAdvice {
@@ -12,7 +18,7 @@ export interface DispatchAdvice {
 }
 
 export function dispatchAdvice(workOrderId: number) {
-  return request.post<DispatchAdvice>(`/api/ai/dispatch/advice?workOrderId=${workOrderId}`)
+  return request.post<DispatchAdvice>(`/api/ai/dispatch/advice?workOrderId=${workOrderId}`, {}, { headers: hfHeaders() })
 }
 
 export function assignWorkOrder(id: number, personnelId: number) {

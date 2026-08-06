@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 @Component
 @ConfigurationProperties(prefix = "huggingface")
 public class HuggingFaceProperties {
-    private String apiKey;
     private String model = "Qwen/Qwen2.5-7B-Instruct";
     private String fallbackModel = "meta-llama/Llama-3.2-3B-Instruct";
     private String endpoint = "https://api-inference.huggingface.co/models/";

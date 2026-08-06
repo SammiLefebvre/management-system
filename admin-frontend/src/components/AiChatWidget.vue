@@ -52,6 +52,7 @@ import { ref, nextTick, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { ChatDotRound, Close } from '@element-plus/icons-vue'
 import { chat } from '@/api/ai'
+import { ensureHuggingFaceToken } from '@/composables/useHuggingFaceToken'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -79,10 +80,13 @@ async function send() {
   loading.value = true
   scroll()
   try {
+    await ensureHuggingFaceToken()
     const res = await chat(text)
     messages.value.push({ role: 'assistant', content: res.data })
-  } catch (e) {
-    ElMessage.error('AI 服务暂时不可用')
+  } catch (e: any) {
+    if (e.message !== '未提供 API Token') {
+      ElMessage.error('AI 服务暂时不可用')
+    }
   } finally {
     loading.value = false
     scroll()

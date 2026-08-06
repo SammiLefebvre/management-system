@@ -17,7 +17,6 @@ class HuggingFaceClientTest {
     void generate_shouldCallEndpointAndReturnGeneratedText() {
         RestTemplate restTemplate = mock(RestTemplate.class);
         HuggingFaceProperties properties = new HuggingFaceProperties();
-        properties.setApiKey("test-key");
         properties.setModel("Qwen/Qwen2.5-7B-Instruct");
 
         HuggingFaceClientImpl client = new HuggingFaceClientImpl(restTemplate, properties);
@@ -31,7 +30,7 @@ class HuggingFaceClientTest {
                 eq(String.class)
         )).thenReturn(response);
 
-        String result = client.generate("prompt");
+        String result = client.generate("prompt", "test-key");
 
         assertEquals("你好", result);
     }

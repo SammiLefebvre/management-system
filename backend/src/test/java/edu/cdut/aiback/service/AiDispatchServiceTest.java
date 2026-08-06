@@ -53,10 +53,10 @@ class AiDispatchServiceTest {
         p.setCompletedWeek(3);
         when(personnelMapper.selectCandidates(any(), any())).thenReturn(List.of(p));
 
-        when(huggingFaceClient.generate(any())).thenReturn(
+        when(huggingFaceClient.generate(any(), any())).thenReturn(
                 "{\"personnelId\":2,\"name\":\"张三\",\"reason\":\"距离最近\"}");
 
-        AiDispatchAdviceVO advice = service.advise(1L);
+        AiDispatchAdviceVO advice = service.advise(1L, "hf-test-token");
 
         assertNotNull(advice);
         assertEquals(2L, advice.getPersonnelId());

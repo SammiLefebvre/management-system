@@ -153,6 +153,7 @@ import {
 } from '@/api/workorder'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { dispatchAdvice, assignWorkOrder, type DispatchAdvice } from '@/api/ai'
+import { ensureHuggingFaceToken } from '@/composables/useHuggingFaceToken'
 import AppCard from '@/components/AppCard.vue'
 import StatusTag from '@/components/StatusTag.vue'
 
@@ -271,6 +272,11 @@ async function handleForceClose() {
 }
 
 async function handleAiDispatch() {
+  try {
+    await ensureHuggingFaceToken()
+  } catch {
+    return
+  }
   aiLoading.value = true
   try {
     const res = await dispatchAdvice(id)

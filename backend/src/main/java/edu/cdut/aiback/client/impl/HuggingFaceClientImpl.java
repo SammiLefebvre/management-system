@@ -26,15 +26,15 @@ public class HuggingFaceClientImpl implements HuggingFaceClient {
     }
 
     @Override
-    public String generate(String prompt) {
-        if (properties.getApiKey() == null || properties.getApiKey().isBlank()) {
-            throw new BizException("HUGGINGFACE_API_KEY 未配置");
+    public String generate(String prompt, String apiKey) {
+        if (apiKey == null || apiKey.isBlank()) {
+            throw new BizException("请先提供 HuggingFace API Key");
         }
 
         String url = properties.getEndpoint() + properties.getModel();
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(properties.getApiKey());
+        headers.setBearerAuth(apiKey);
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         Map<String, Object> parameters = new HashMap<>();

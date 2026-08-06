@@ -15,11 +15,11 @@ public class AiChatService {
         this.statisticsService = statisticsService;
     }
 
-    public String chat(String message) {
+    public String chat(String message, String apiKey) {
         String system = "你是工单管理系统的 AI 助手。你只能基于下面提供的系统数据摘要回答，不要编造。如果数据不足，请说明。";
         String context = "当前系统数据摘要：\n" + statisticsService.summaryForAi();
         String user = context + "\n\n用户问题：" + message;
         String prompt = AiPromptFormatter.qwenPrompt(system, user);
-        return huggingFaceClient.generate(prompt);
+        return huggingFaceClient.generate(prompt, apiKey);
     }
 }
