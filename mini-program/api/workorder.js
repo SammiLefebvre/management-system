@@ -41,3 +41,7 @@ export function togglePriority(id) {
 export function createWorkOrder(data) {
   return http.post(BASE, data)
 }
+
+export function publishWorkOrder(id) {
+  return http.put(`${BASE}/${id}/publish`)
+}
