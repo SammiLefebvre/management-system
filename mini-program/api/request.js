@@ -1,5 +1,12 @@
 const BASE_URL = 'http://localhost:9090'
 
+/** 相对路径补全为可访问 URL（上传返回常为 /uploads/...） */
+export function fullUrl(u) {
+  if (!u) return u
+  if (typeof u !== 'string') return u
+  return u.startsWith('http') ? u : BASE_URL + u
+}
+
 function request(options) {
   return new Promise((resolve, reject) => {
     const token = uni.getStorageSync('token')
@@ -49,7 +56,9 @@ function uploadFile(filePath) {
           uni.showToast({ title: data.message || '上传失败', icon: 'none' })
           return reject(new Error(data.message))
         }
-        resolve(data.data)
+        // 兼容返回 string URL 或 { url }；存库用相对路径，展示侧自行 fullUrl
+        const raw = typeof data.data === 'string' ? data.data : (data.data?.url || data.data)
+        resolve(raw)
       },
       fail: (err) => {
         uni.showToast({ title: '上传失败', icon: 'none' })
@@ -60,6 +69,8 @@ function uploadFile(filePath) {
 }
 
 export default {
+  BASE_URL,
+  fullUrl,
   get(url, data) { return request({ url, method: 'GET', data }) },
   post(url, data) { return request({ url, method: 'POST', data }) },
   put(url, data) { return request({ url, method: 'PUT', data }) },
