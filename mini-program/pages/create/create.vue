@@ -12,8 +12,10 @@
 
       <view class="form-item">
         <text class="label">故障点位:</text>
-        <picker mode="selector" :range="deviceLabels" :value="deviceIndex" @change="onDeviceChange">
-          <view class="picker">{{ selectedDevice ? selectedDevice.deviceName : '请选择故障点位' }}</view>
+        <picker mode="selector" :range="deviceLabels" :value="deviceIndex" @change="onDeviceChange" :disabled="!form.workOrderType || devices.length === 0">
+          <view class="picker" :class="{ muted: !form.workOrderType || devices.length === 0 }">
+            {{ devicePickerText }}
+          </view>
         </picker>
       </view>
 
@@ -38,9 +40,9 @@
 
       <view class="form-item">
         <text class="label">参照物照片:</text>
-        <button type="primary" size="mini" @click="takePhoto">拍照</button>
-        <view v-if="form.referencePhoto" class="photo-list">
-          <image :src="formatUrl(form.referencePhoto)" mode="aspectFill" />
+        <button type="primary" size="mini" @click="takePhoto">拍照（可多张）</button>
+        <view v-if="referencePhotos.length" class="photo-list">
+          <image v-for="(url, idx) in referencePhotos" :key="idx" :src="formatUrl(url)" mode="aspectFill" />
         </view>
       </view>
 
@@ -61,11 +63,12 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { getDeviceListByType, getCodeTable } from '@/api/device.js'
 import { createWorkOrder } from '@/api/workorder.js'
-import { chooseImage, formatDateTime } from '@/utils/common.js'
-import http from '@/api/request.js'
+import { chooseImage } from '@/utils/common.js'
+import http, { fullUrl } from '@/api/request.js'
 
 const workOrderTypes = ref([])
 const devices = ref([])
+const referencePhotos = ref([])
 
 const form = reactive({
   workOrderType: '',
@@ -83,6 +86,11 @@ const typeIndex = computed(() => workOrderTypes.value.findIndex(i => i.codeValue
 const deviceLabels = computed(() => devices.value.map(i => i.deviceName))
 const deviceIndex = computed(() => devices.value.findIndex(i => i.id === form.deviceId))
 const selectedDevice = computed(() => devices.value.find(i => i.id === form.deviceId))
+const devicePickerText = computed(() => {
+  if (!form.workOrderType) return '请先选择工单类型'
+  if (devices.value.length === 0) return '该类型暂无设备点位'
+  return selectedDevice.value ? selectedDevice.value.deviceName : '请选择故障点位'
+})
 
 onMounted(async () => {
   const res = await getCodeTable('work_order_type')
@@ -103,14 +111,16 @@ function onDeviceChange(e) {
 }
 
 async function takePhoto() {
-  const res = await chooseImage(1)
-  form.referencePhoto = await http.upload(res.tempFilePaths[0])
+  const res = await chooseImage(3)
+  for (const path of res.tempFilePaths) {
+    const url = await http.upload(path)
+    referencePhotos.value.push(url)
+  }
+  form.referencePhoto = referencePhotos.value[0] || ''
 }
 
 function formatUrl(url) {
-  if (!url) return ''
-  if (url.startsWith('http')) return url
-  return `http://localhost:9090${url}`
+  return fullUrl(url)
 }
 
 async function save(publishNow) {
@@ -118,6 +128,7 @@ async function save(publishNow) {
     return uni.showToast({ title: '请填写工单类型和故障点位', icon: 'none' })
   }
   form.publishNow = publishNow
+  form.referencePhoto = referencePhotos.value[0] || form.referencePhoto || ''
   await createWorkOrder({ ...form })
   uni.showToast({ title: publishNow ? '发布成功' : '草稿已保存', icon: 'success' })
   setTimeout(() => uni.navigateBack(), 800)
@@ -131,9 +142,10 @@ async function save(publishNow) {
 .form-item { margin-bottom: 24rpx; }
 .label { display: block; color: #666; margin-bottom: 12rpx; font-size: 28rpx; }
 .picker, .input { border: 1rpx solid #ddd; border-radius: 8rpx; padding: 16rpx; font-size: 28rpx; }
+.picker.muted { color: #bbb; }
+.photo-list { display: flex; flex-wrap: wrap; gap: 12rpx; margin-top: 16rpx; }
 .device-info { background: #f8f8f8; padding: 16rpx; border-radius: 8rpx; margin-bottom: 24rpx; font-size: 26rpx; color: #666; }
 .textarea { width: 100%; border: 1rpx solid #ddd; border-radius: 8rpx; padding: 16rpx; height: 160rpx; box-sizing: border-box; }
-.photo-list { margin-top: 16rpx; }
 .photo-list image { width: 160rpx; height: 160rpx; border-radius: 8rpx; }
 .actions { display: flex; gap: 20rpx; margin-top: 40rpx; }
 .actions button { flex: 1; }
