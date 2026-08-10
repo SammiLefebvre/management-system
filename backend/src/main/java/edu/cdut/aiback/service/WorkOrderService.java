@@ -16,14 +16,17 @@ import edu.cdut.aiback.enums.WorkOrderStatus;
 import edu.cdut.aiback.enums.UserRole;
 import edu.cdut.aiback.mapper.WorkOrderLogMapper;
 import edu.cdut.aiback.mapper.WorkOrderMapper;
+import edu.cdut.aiback.util.ImageWatermarkUtil;
 import edu.cdut.aiback.util.WorkOrderCodeGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.File;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -265,16 +268,16 @@ public class WorkOrderService extends ServiceImpl<WorkOrderMapper, WorkOrder> {
             throw new BizException("请选择维修结果");
         }
 
-        wo.setStatus("confirmed");  // 提交完工后进入待确认，但 status 枚举用的是 confirmed 表示"已确认"(完成)，此处应为待确认
-        // 等待内场确认前，status 实际应当是 pending_confirm... 但原设计没有此状态
-        // 按需求文档: 提交完工 → status = "待确认"，内场确认后 → "已确认"
-        // 这里用一个临时状态来等待确认。回顾状态枚举: 没有 "待确认" 独立状态
-        // 按需求文档流程: 提交完工 → 待确认 → 内场确认 → 已确认
-        // 这里我把 completing 状态提交后修改为 confirmed_await 来替代原设计的 "待确认"
+        // 对结束照片叠加地点+时间水印（已有工具类此前未接线）
+        String location = resolveLocationText(wo);
+        List<String> watermarkedPhotos = new ArrayList<>();
+        for (String url : dto.getEndPhotos()) {
+            watermarkedPhotos.add(applyEndPhotoWatermark(url, location));
+        }
 
         wo.setStatus("pending_confirm");
         wo.setCompleteTime(LocalDateTime.now());
-        wo.setEndPhotos(JSONUtil.toJsonStr(dto.getEndPhotos()));
+        wo.setEndPhotos(JSONUtil.toJsonStr(watermarkedPhotos));
         wo.setRepairResult(dto.getRepairResult());
         wo.setFaultDescription(dto.getFaultDescription());
         wo.setSpecialRequirements(dto.getSpecialRequirements());
@@ -283,6 +286,50 @@ public class WorkOrderService extends ServiceImpl<WorkOrderMapper, WorkOrder> {
         updateById(wo);
 
         addLog(id, "complete", "提交完工 - " + ("fixed".equals(dto.getRepairResult()) ? "已修复" : "未修复"));
+    }
+
+    private String resolveLocationText(WorkOrder wo) {
+        if (wo.getDeviceId() != null) {
+            try {
+                Device device = deviceService.getById(wo.getDeviceId());
+                if (device != null && StrUtil.isNotBlank(device.getDeviceName())) {
+                    return device.getDeviceName();
+                }
+            } catch (Exception e) {
+                log.warn("读取设备名称失败: {}", e.getMessage());
+            }
+        }
+        return "现场";
+    }
+
+    /**
+     * 将 /uploads/... URL 转为本地文件并加水印；失败时回退原 URL，避免阻断完工。
+     */
+    private String applyEndPhotoWatermark(String photoUrl, String location) {
+        if (StrUtil.isBlank(photoUrl)) {
+            return photoUrl;
+        }
+        try {
+            String pathPart = photoUrl;
+            int uploadsIdx = photoUrl.indexOf("/uploads/");
+            if (uploadsIdx >= 0) {
+                pathPart = photoUrl.substring(uploadsIdx);
+            } else if (photoUrl.startsWith("http")) {
+                return photoUrl;
+            }
+            String relative = pathPart.startsWith("/uploads/")
+                    ? pathPart.substring("/uploads/".length())
+                    : pathPart.replaceFirst("^/+", "");
+            String sourcePath = uploadPath + File.separator + relative.replace("/", File.separator);
+            if (!cn.hutool.core.io.FileUtil.exist(sourcePath)) {
+                log.warn("完工照片本地文件不存在，跳过水印: {}", sourcePath);
+                return pathPart.startsWith("/") ? pathPart : "/uploads/" + relative;
+            }
+            return ImageWatermarkUtil.addWatermark(sourcePath, location, uploadPath);
+        } catch (Exception e) {
+            log.warn("完工照片水印失败，使用原图: {}", e.getMessage());
+            return photoUrl;
+        }
     }
 
     /**
