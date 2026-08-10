@@ -18,6 +18,19 @@ export function statusLabel(status) {
   return map[status] || status
 }
 
+/** 详情页作业步骤提示（对齐状态机：claimed→签到, in_progress→排查, completing→完工） */
+export function stepTip(status) {
+  const map = {
+    published: '可认领此工单；认领后需到现场签到开始作业',
+    claimed: '第 1 步：到现场签到（定位 + 拍照）',
+    in_progress: '第 2 步：填写排查过程并上传排查照片',
+    completing: '第 3 步：填写维修结果并上传结束照片（后端自动水印）',
+    pending_confirm: '已提交完工，等待内场确认归档',
+    draft: '草稿可继续编辑后发布'
+  }
+  return map[status] || ''
+}
+
 export function chooseLocation() {
   return new Promise((resolve, reject) => {
     uni.chooseLocation({
@@ -37,14 +50,19 @@ export function getCurrentLocation() {
   })
 }
 
-export function chooseImage(count = 1) {
+/**
+ * @param {number} count
+ * @param {{ cameraOnly?: boolean }} [opts]
+ */
+export function chooseImage(count = 1, opts = {}) {
   return new Promise((resolve, reject) => {
     uni.chooseImage({
       count,
       sizeType: ['compressed'],
-      sourceType: ['camera', 'album'],
+      sourceType: opts.cameraOnly ? ['camera'] : ['camera', 'album'],
       success: resolve,
       fail: reject
     })
   })
 }
+
