@@ -5,6 +5,12 @@
       <view class="title">工单管理系统</view>
       <view class="tip">请使用微信一键登录</view>
       <button type="primary" @click="handleLogin">微信登录</button>
+
+      <view class="debug-box">
+        <view class="debug-tip">本地联调（未配置 appid 时可用调试 code）</view>
+        <input class="debug-input" v-model="debugCode" placeholder="输入调试 code（人员绑定的 openid）" />
+        <button type="default" :disabled="!debugCode" @click="handleDebugLogin">调试登录</button>
+      </view>
     </view>
 
     <view v-else>
@@ -41,7 +47,7 @@
             <view>时间: {{ formatDateTime(item.createdAt) }}</view>
           </view>
         </view>
-        <view v-if="draftList.length === 0" class="empty">暂无草稿</view>
+        <view v-if="draftList.length === 0" class="empty">暂无草稿，点击上方「手动建单」创建</view>
       </view>
 
       <!-- 处理中 Tab -->
@@ -57,7 +63,7 @@
             <view v-if="item.isPriority" class="priority">置顶</view>
           </view>
         </view>
-        <view v-if="processingList.length === 0" class="empty">暂无处理中工单</view>
+        <view v-if="processingList.length === 0" class="empty">暂无处理中工单，可下拉刷新或从待发布创建并发布</view>
       </view>
 
       <!-- 已确认 Tab -->
@@ -79,7 +85,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onPullDownRefresh, onShow } from '@dcloudio/uni-app'
+import { ref, computed } from 'vue'
+import { onPullDownRefresh, onShow } from '@dcloudio/uni-app'
 import { useUserStore } from '@/store/user.js'
 import { wxLogin } from '@/api/auth.js'
 import { getWorkOrderList } from '@/api/workorder.js'
@@ -88,6 +95,7 @@ import { formatDateTime, statusLabel } from '@/utils/common.js'
 const { token, setToken, setUserInfo } = useUserStore()
 const currentTab = ref(1)
 const list = ref([])
+const debugCode = ref('dev-openid-01')
 
 const draftList = computed(() => list.value.filter(i => i.status === 'draft'))
 const processingList = computed(() => list.value.filter(i => ['published','claimed','in_progress','completing','pending_confirm'].includes(i.status)))
@@ -101,19 +109,34 @@ onPullDownRefresh(() => {
   fetchList().finally(() => uni.stopPullDownRefresh())
 })
 
+async function applyLogin(res) {
+  setToken(res.data.token)
+  setUserInfo({
+    userId: res.data.userId,
+    account: res.data.account,
+    role: res.data.role,
+    projectGroup: res.data.projectGroup
+  })
+  uni.showToast({ title: '登录成功', icon: 'success' })
+  fetchList()
+}
+
 async function handleLogin() {
   try {
     const loginRes = await uni.login({ provider: 'weixin' })
     const res = await wxLogin(loginRes.code)
-    setToken(res.data.token)
-    setUserInfo({
-      userId: res.data.userId,
-      account: res.data.account,
-      role: res.data.role,
-      projectGroup: res.data.projectGroup
-    })
-    uni.showToast({ title: '登录成功', icon: 'success' })
-    fetchList()
+    await applyLogin(res)
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+async function handleDebugLogin() {
+  const code = (debugCode.value || '').trim()
+  if (!code) return
+  try {
+    const res = await wxLogin(code)
+    await applyLogin(res)
   } catch (e) {
     console.error(e)
   }
@@ -143,9 +166,12 @@ function goCreate() {
 
 <style scoped>
 .container { padding: 20rpx; }
-.login-box { text-align: center; margin-top: 200rpx; }
+.login-box { text-align: center; margin-top: 120rpx; }
 .title { font-size: 48rpx; font-weight: bold; margin-bottom: 20rpx; }
 .tip { color: #999; margin-bottom: 40rpx; }
+.debug-box { margin: 60rpx 40rpx 0; text-align: left; padding: 24rpx; background: #f8f8f8; border-radius: 12rpx; }
+.debug-tip { color: #999; font-size: 24rpx; margin-bottom: 16rpx; }
+.debug-input { border: 1rpx solid #ddd; border-radius: 8rpx; padding: 16rpx; margin-bottom: 16rpx; background: #fff; font-size: 28rpx; }
 .tabs { display: flex; border-bottom: 1rpx solid #eee; margin-bottom: 20rpx; }
 .tab-item { flex: 1; text-align: center; padding: 24rpx 0; color: #666; }
 .tab-item.active { color: #007aff; border-bottom: 4rpx solid #007aff; }
@@ -159,5 +185,5 @@ function goCreate() {
 .tag.confirmed, .tag.closed { background: #f6ffed; color: #52c41a; }
 .card-body { font-size: 28rpx; color: #666; line-height: 1.8; }
 .priority { color: #ff4d4f; font-weight: bold; margin-top: 8rpx; }
-.empty { text-align: center; color: #999; padding: 100rpx 0; }
+.empty { text-align: center; color: #999; padding: 100rpx 0; line-height: 1.6; }
 </style>
