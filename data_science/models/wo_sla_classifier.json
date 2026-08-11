@@ -1,0 +1,14 @@
+{
+  "model": "GradientBoostingClassifier",
+  "dataset": "GitHub public work-order sample",
+  "task": "binary: SLA breach",
+  "f1_macro": 0.925,
+  "accuracy": 0.9333,
+  "features": [
+    "hour_added",
+    "dow_added",
+    "month_added",
+    "was_completed",
+    "activity_code"
+  ]
+}

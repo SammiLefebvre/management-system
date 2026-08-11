@@ -1,0 +1,13 @@
+{
+  "model": "GradientBoostingRegressor(log1p target)",
+  "dataset": "GitHub public work-order sample",
+  "task": "regression: work-order duration in minutes",
+  "mae_minutes": 6714.08,
+  "duration_cap_minutes": 56560.25,
+  "features": [
+    "activity_code",
+    "hour_added",
+    "dow_added",
+    "month_added"
+  ]
+}

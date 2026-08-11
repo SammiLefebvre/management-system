@@ -1,0 +1,15 @@
+{
+  "model": "RandomForestClassifier",
+  "dataset": "UCI AI4I 2020",
+  "task": "binary: machine failure",
+  "f1_macro": 0.7988,
+  "accuracy": 0.98,
+  "features": [
+    "Air temperature [K]",
+    "Process temperature [K]",
+    "Rotational speed [rpm]",
+    "Torque [Nm]",
+    "Tool wear [min]",
+    "Type"
+  ]
+}

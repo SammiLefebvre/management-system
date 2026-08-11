@@ -1,0 +1,15 @@
+{
+  "model": "OneVsRestClassifier(RandomForestClassifier)",
+  "dataset": "UCI AI4I 2020",
+  "task": "multilabel: failure types TWF/HDF/PWF/OSF/RNF",
+  "f1_macro": 0.3893,
+  "hamming_loss": 0.0048,
+  "features": [
+    "Air temperature [K]",
+    "Process temperature [K]",
+    "Rotational speed [rpm]",
+    "Torque [Nm]",
+    "Tool wear [min]",
+    "Type"
+  ]
+}
