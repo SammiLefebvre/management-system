@@ -4,10 +4,10 @@ from typing import Any
 
 import joblib
 
-MODEL_DIR = Path(__file__).resolve().parents[2] / "models"
+MODEL_DIR = Path(__file__).resolve().parents[1] / "models"
 MODEL_DIR.mkdir(parents=True, exist_ok=True)
 
-RAW_DIR = Path(__file__).resolve().parents[2] / "data" / "raw"
+RAW_DIR = Path(__file__).resolve().parents[1] / "data" / "raw"
 RAW_DIR.mkdir(parents=True, exist_ok=True)
 
 

@@ -23,6 +23,11 @@ management-system/
 ├── backend/                       # Spring Boot backend
 │   ├── docs/sql/init.sql          # Database initialization script
 │   └── src/main/java/...
+├── data_science/                  # Python predictive models (ML/MLOps)
+│   ├── src/...                    # Training scripts
+│   ├── models/                    # Saved model artifacts (gitignored)
+│   ├── data/raw/                  # Public datasets (gitignored)
+│   └── README.md
 ├── admin-frontend/                # Vue 3 admin dashboard
 │   └── src/...
 └── mini-program/                  # uni-app WeChat mini-program
@@ -201,6 +206,25 @@ On the login page you can use the verification code `123456` for any of the foll
 - Support team schedule date ranges
 - Mini-program push notifications
 
+### Data Science & Predictive Models
+
+A separate `data_science/` module trains ML models on public datasets:
+
+- **Predictive maintenance** (UCI AI4I 2020): binary failure risk + failure-type classification.
+- **Work-order duration & SLA breach** (public work-order sample): regression and binary classification.
+
+Run it from the repo root:
+
+```bash
+cd data_science
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python3 -m pytest data_science/tests -v
+```
+
+See `data_science/README.md` for the full model list and metrics.
+
 ---
 
 ## 中文文档
@@ -222,6 +246,11 @@ management-system/
 ├── backend/                       # Spring Boot 后端
 │   ├── docs/sql/init.sql          # 数据库初始化脚本
 │   └── src/main/java/...
+├── data_science/                  # Python 预测模型（ML/MLOps）
+│   ├── src/...                    # 训练脚本
+│   ├── models/                    # 保存的模型产物（已加入 gitignore）
+│   ├── data/raw/                  # 公开数据集（已加入 gitignore）
+│   └── README.md
 ├── admin-frontend/                # Vue 3 管理后台
 │   └── src/...
 └── mini-program/                  # uni-app 微信小程序
@@ -399,3 +428,22 @@ npm run dev
 - AI 助手接入流式输出
 - 班组排班支持结束日期段
 - 小程序消息推送
+
+### 数据科学与预测模型
+
+独立的 `data_science/` 模块基于公开数据集训练机器学习模型：
+
+- **预测性维护**（UCI AI4I 2020）：设备故障风险二分类 + 故障类型多标签分类。
+- **工单耗时与 SLA 超期**（公开工单样本）：回归预测 + 二分类。
+
+从仓库根目录运行：
+
+```bash
+cd data_science
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python3 -m pytest data_science/tests -v
+```
+
+完整模型列表与指标见 `data_science/README.md`。`data_science/data/feature_mapping.md` 说明了公开数据与 Java 系统实体之间的映射关系。
