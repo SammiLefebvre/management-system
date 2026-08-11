@@ -30,6 +30,10 @@ backend/src/main/resources/application-local.yml
 .DS_Store
 Thumbs.db
 
-# Launcher build artifacts
-tools/demo-launcher/bin/
-tools/demo-launcher/obj/
+# Data science
+/data_science/.venv/
+/data_science/data/raw/
+/data_science/models/*.pkl
+/data_science/models/*.json
+/data_science/**/__pycache__/
+/data_science/.pytest_cache/
