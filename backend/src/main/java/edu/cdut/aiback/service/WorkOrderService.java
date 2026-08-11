@@ -309,23 +309,35 @@ public class WorkOrderService extends ServiceImpl<WorkOrderMapper, WorkOrder> {
         if (StrUtil.isBlank(photoUrl)) {
             return photoUrl;
         }
+        if (photoUrl.startsWith("http")) {
+            return photoUrl;
+        }
+
+        int uploadsIdx = photoUrl.indexOf("/uploads/");
+        String pathPart = uploadsIdx >= 0 ? photoUrl.substring(uploadsIdx) : photoUrl;
+        String relative = pathPart.startsWith("/uploads/")
+                ? pathPart.substring("/uploads/".length())
+                : pathPart.replaceFirst("^/+", "");
+        relative = relative.replace("\\", "/");
+
+        if (relative.isBlank() || relative.contains("..") || relative.startsWith("/")) {
+            log.warn("完工照片 URL 路径非法，跳过水印: {}", photoUrl);
+            return photoUrl;
+        }
+
         try {
-            String pathPart = photoUrl;
-            int uploadsIdx = photoUrl.indexOf("/uploads/");
-            if (uploadsIdx >= 0) {
-                pathPart = photoUrl.substring(uploadsIdx);
-            } else if (photoUrl.startsWith("http")) {
+            File uploadDir = new File(uploadPath).getCanonicalFile();
+            File sourceFile = new File(uploadDir, relative).getCanonicalFile();
+            String uploadDirPath = uploadDir.getPath() + File.separator;
+            if (!sourceFile.getPath().startsWith(uploadDirPath)) {
+                log.warn("完工照片路径超出上传目录，跳过水印: {}", sourceFile);
                 return photoUrl;
             }
-            String relative = pathPart.startsWith("/uploads/")
-                    ? pathPart.substring("/uploads/".length())
-                    : pathPart.replaceFirst("^/+", "");
-            String sourcePath = uploadPath + File.separator + relative.replace("/", File.separator);
-            if (!cn.hutool.core.io.FileUtil.exist(sourcePath)) {
-                log.warn("完工照片本地文件不存在，跳过水印: {}", sourcePath);
-                return pathPart.startsWith("/") ? pathPart : "/uploads/" + relative;
+            if (!cn.hutool.core.io.FileUtil.exist(sourceFile)) {
+                log.warn("完工照片本地文件不存在，跳过水印: {}", sourceFile);
+                return "/uploads/" + relative;
             }
-            return ImageWatermarkUtil.addWatermark(sourcePath, location, uploadPath);
+            return ImageWatermarkUtil.addWatermark(sourceFile.getPath(), location, uploadPath);
         } catch (Exception e) {
             log.warn("完工照片水印失败，使用原图: {}", e.getMessage());
             return photoUrl;
