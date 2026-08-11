@@ -25,7 +25,7 @@ management-system/
 │   └── src/main/java/...
 ├── data_science/                  # Python predictive models (ML/MLOps)
 │   ├── src/...                    # Training scripts
-│   ├── models/                    # Saved model artifacts (gitignored)
+│   ├── models/                    # Saved model artifacts (committed)
 │   ├── data/raw/                  # Public datasets (gitignored)
 │   └── README.md
 ├── admin-frontend/                # Vue 3 admin dashboard
@@ -248,7 +248,7 @@ management-system/
 │   └── src/main/java/...
 ├── data_science/                  # Python 预测模型（ML/MLOps）
 │   ├── src/...                    # 训练脚本
-│   ├── models/                    # 保存的模型产物（已加入 gitignore）
+│   ├── models/                    # 已提交的模型产物
 │   ├── data/raw/                  # 公开数据集（已加入 gitignore）
 │   └── README.md
 ├── admin-frontend/                # Vue 3 管理后台
